@@ -64,14 +64,14 @@ def upload(up_file_list=(), path=''):
     # 需要填写你的 Access Key 和 Secret Key
     access_key = 'NwsBONsRlNexKJcvlD32d2LK63dJgyKFKuCDU9eB'
     secret_key = 'q5l2A_amklbuM7Bw3T-ewvwoB7FyedkX6gDEeuTX'
-    # #构建鉴权对象
-    # q = Auth(access_key, secret_key)
-    #要上传的空间
+
+    # 要上传的空间
     bucket_name = 'sagacity'
-    base_url = 'http://resource-sagacity.linestorm.ltd/'
-    urls = list()
     # 生成上传 Token，可以指定过期时间等
     token = _get_token(bucket_name,access_key,secret_key)
+    base_url = 'http://resource-sagacity.linestorm.ltd/'
+    urls = list()
+
     for f in up_file_list:
         if not (os.path.exists(f)):
             print ('Upload Error:'+'文件不存在！')
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # 默认上传的路径，可以通过 --path=file/ 参数指定路径
     path = 'img/'
     if len(argv) == 1:
-        file = './resource/modeng.jpg'
+        file = './resource/git-magic.png'
         uf.append(file)
     # elif len(argv) ==2 and argv[1].startswith('--'):
     #     print ('请指定文件！')
