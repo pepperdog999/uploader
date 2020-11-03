@@ -10,15 +10,15 @@ from datetime import datetime
 from hashlib import sha1
 import requests
 import platform, os
-from compat import b,s
+from compat import b,s,con
 
+con.read("./resource/configure.ini")  # 文件名
 _sys_info = '{0}; {1}'.format(platform.system(), platform.machine())
 _python_ver = platform.python_version()
-
 USER_AGENT = 'QiniuPython/{0} ({1}; ) Python/{2}'.format(
     '7.2.4', _sys_info, _python_ver)
 _headers = {'User-Agent': USER_AGENT}
-url = 'http://up-z2.qiniup.com/'
+host = 'http://up-z2.qiniup.com/'
 
 
 def urlsafe_base64_encode(data):
@@ -55,29 +55,29 @@ def _put_file(token, k, path):
     with open(path, 'rb') as input_stream:
         try:
             resp = requests.post(
-                url, data=fields, files={'file': (file_name, input_stream, mime_type)}, headers=_headers)
+                host, data=fields, files={'file': (file_name, input_stream, mime_type)}, headers=_headers)
             return resp.json()
         except Exception as e:
             return None
 
 def upload(up_file_list=(), path=''):
-    # 需要填写你的 Access Key 和 Secret Key
-    access_key = 'NwsBONsRlNexKJcvlD32d2LK63dJgyKFKuCDU9eB'
-    secret_key = 'q5l2A_amklbuM7Bw3T-ewvwoB7FyedkX6gDEeuTX'
 
+    # 需要填写你的 Access Key 和 Secret Key
+    access_key = con.get('qiniu', 'access_key')
+    secret_key = con.get('qiniu', 'secret_key')
     # 要上传的空间
-    bucket_name = 'sagacity'
-    # 生成上传 Token，可以指定过期时间等
-    token = _get_token(bucket_name,access_key,secret_key)
-    base_url = 'http://resource-sagacity.linestorm.ltd/'
+    bucket_name = con.get('qiniu', 'bucket_name')
+    base_url = con.get('qiniu', 'base_url')
     urls = list()
 
+    # 生成上传 Token，可以指定过期时间等
+    token = _get_token(bucket_name,access_key,secret_key)
     for f in up_file_list:
         if not (os.path.exists(f)):
             print ('Upload Error:'+'文件不存在！')
             exit(-2)
         #上传后保存的文件名
-        key = path + f.split("/")[-1]
+        key = '%s/%s' % (path, f.split("/")[-1])
         ret = _put_file(token, key, f)
         if ret is None or 'error' in ret:
             print('Upload Error:' + ret['error'])
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     # 上传的文件列表
     uf = []
     # 默认上传的路径，可以通过 --path=file/ 参数指定路径
-    path = 'img/'
+    path = con.get('DEFAULT', 'remote_path')
     if len(argv) == 1:
         file = './resource/git-magic.png'
         uf.append(file)

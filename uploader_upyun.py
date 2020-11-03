@@ -7,11 +7,13 @@ import hmac
 import json
 import time
 from datetime import datetime
-from hashlib import sha1
+from hashlib import sha1,md5
 import requests
 import os
-from compat import b,s
+from compat import b,s,con
 
+# 从配置文件读取
+con.read("./resource/configure.ini")  # 文件名
 _headers = {}
 kwargs = {'allow-file-type': 'jpg,jpeg,png,py'}
 host = 'http://v0.api.upyun.com'
@@ -40,8 +42,13 @@ def _make_signature(**kwargs):
     if kwargs.get('content_md5'):
         signarr.append(kwargs['content_md5'])
     signstr = '&'.join(signarr)
-    hashed = hmac.new(b(kwargs['password']), b(signstr), sha1)
-    return 'UPYUN %s:%s' % (kwargs['username'], urlsafe_base64_encode(hashed.digest()))
+    # hashed = hmac.new(b(kwargs['password']), b(signstr), sha1)
+    # return 'UPYUN %s:%s' % (kwargs['username'], urlsafe_base64_encode(hashed.digest()))
+    signature = base64.b64encode(
+        hmac.new(b(kwargs['password']), b(signstr),
+                 digestmod=sha1).digest()
+    ).decode()
+    return 'UPYUN %s:%s' % (kwargs['username'], signature)
 
 
 # 流上传
@@ -56,7 +63,7 @@ def _put_file(username, password, service, k, path, expired_time=1800):
     policy = _make_policy(fields)
     signature = _make_signature(
         username=username,
-        password=password,
+        password=(md5(b(password)).hexdigest()),
         method='POST',
         uri='/%s/' % service,
         date=cur_dt(),
@@ -77,12 +84,11 @@ def _put_file(username, password, service, k, path, expired_time=1800):
             return None
 
 def upload(up_file_list=(), path=''):
-    username = ''
-    password = '' #md5
-
+    username = con.get('upyun', 'username')
+    password = con.get('upyun', 'password')
     #要上传的空间
-    service_name = 'ideas-img'
-    base_url = 'http://deas-img.test.upcdn.net/'
+    service_name = con.get('upyun', 'service_name')
+    base_url = con.get('upyun', 'base_url')
     urls = list()
 
     for f in up_file_list:
@@ -93,11 +99,11 @@ def upload(up_file_list=(), path=''):
         key = '%s/%s' % (path, f.split("/")[-1])
         ret = _put_file(username, password, service_name, key, f)
         print (ret)
-        if ret is None or 'error' in ret:
-            print('Upload Error:' + ret['error'])
-            exit(-1)
-        else:
+        if int(ret['code']) == 200:
             urls.append(base_url+ret['url'])
+        else:
+            print('Upload Error:' + ret['message'])
+            exit(-1)
     print('Upload Success:')
     for url in urls: print(url)
 
@@ -105,7 +111,7 @@ if __name__ == "__main__":
     # 上传的文件列表
     uf = []
     # 默认上传的路径，可以通过 --path=file/ 参数指定路径
-    path = 'img'
+    path = con.get('DEFAULT', 'remote_path')
     if len(argv) == 1:
         file = './resource/git-magic.png'
         uf.append(file)

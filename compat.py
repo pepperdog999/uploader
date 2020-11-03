@@ -13,8 +13,10 @@ is_py3 = (_ver[0] == 3)
 # ---------
 # Specifics
 # ---------
-
 if is_py2:
+    import ConfigParser as configparser
+    con = configparser.ConfigParser()
+
     from urlparse import urlparse  # noqa
     import StringIO
     StringIO = BytesIO = StringIO.StringIO
@@ -35,6 +37,9 @@ if is_py2:
         return unicode(data, 'unicode_escape')  # noqa
 
 elif is_py3:
+    import configparser as configparser
+    con = configparser.ConfigParser()
+
     from urllib.parse import urlparse  # noqa
     import io
     StringIO = io.StringIO
