@@ -12,7 +12,9 @@ import requests
 import platform, os
 from compat import b,s,con
 
-con.read("./resource/configure.ini")  # 文件名
+dirname, filename = os.path.split(os.path.abspath(argv[0]))
+con.read(dirname +'/configure.ini')  # 文件名
+
 _sys_info = '{0}; {1}'.format(platform.system(), platform.machine())
 _python_ver = platform.python_version()
 USER_AGENT = 'QiniuPython/{0} ({1}; ) Python/{2}'.format(
@@ -93,7 +95,7 @@ if __name__ == "__main__":
     # 默认上传的路径，可以通过 --path=file/ 参数指定路径
     path = con.get('DEFAULT', 'remote_path')
     if len(argv) == 1:
-        file = './resource/git-magic.png'
+        file = dirname + '/resource/git-magic.png'
         uf.append(file)
     # elif len(argv) ==2 and argv[1].startswith('--'):
     #     print ('请指定文件！')
