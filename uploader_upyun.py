@@ -1,5 +1,5 @@
-# -- coding: utf-8 --
-# 未采用又拍云提供的sdk，手动实现。
+# coding=utf-8
+# 不采用又拍云提供的sdk，原生实现。
 
 from sys import argv
 import base64
@@ -17,7 +17,7 @@ dirname, filename = os.path.split(os.path.abspath(argv[0]))
 con.read(dirname +'/configure.ini')  # 文件名
 
 _headers = {}
-kwargs = {'allow-file-type': 'jpg,jpeg,png,py'}
+kwargs = {'allow-file-type': con.get('upyun', 'file_type')}
 host = 'http://v0.api.upyun.com'
 
 def cur_dt():
@@ -102,7 +102,7 @@ def upload(up_file_list=(), path=''):
         ret = _put_file(username, password, service_name, key, f)
         #print (ret)
         if int(ret['code']) == 200:
-            urls.append(base_url+ret['url'])
+            urls.append(base_url+ret['url'].encode('utf-8'))
         else:
             print('Upload Error:' + ret['message'])
             exit(-1)

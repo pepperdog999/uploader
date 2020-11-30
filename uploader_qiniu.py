@@ -1,5 +1,5 @@
-# -- coding: utf-8 --
-# 未采用七牛提供的sdk，手动实现。
+# coding=utf-8
+# 不采用七牛提供的sdk，原生实现。
 
 from sys import argv
 import base64
@@ -85,7 +85,7 @@ def upload(up_file_list=(), path=''):
             print('Upload Error:' + ret['error'])
             exit(-1)
         else:
-            urls.append(base_url+ret['key'])
+            urls.append(base_url+ret['key'].encode('utf-8'))
     print('Upload Success:')
     for url in urls: print(url)
 
@@ -95,7 +95,8 @@ if __name__ == "__main__":
     # 默认上传的路径，可以通过 --path=file/ 参数指定路径
     path = con.get('DEFAULT', 'remote_path')
     if len(argv) == 1:
-        file = dirname + '/resource/git-magic.png'
+        # file = dirname + '/resource/git-magic.png'
+        file = dirname + '/resource/魔灯.jpg'
         uf.append(file)
     # elif len(argv) ==2 and argv[1].startswith('--'):
     #     print ('请指定文件！')
